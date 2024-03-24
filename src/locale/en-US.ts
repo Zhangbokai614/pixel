@@ -1,6 +1,8 @@
 import localeMessageBox from '@/components/message-box/locale/en-US';
 import localeLogin from '@/views/login/locale/en-US';
 
+import localePixel from '@/views/works/pixel/locale/en-US';
+
 import localeWorkplace from '@/views/dashboard/workplace/locale/en-US';
 
 import localeMonitor from '@/views/dashboard/monitor/locale/en-US';
@@ -29,6 +31,7 @@ import localeUserSetting from '@/views/user/setting/locale/en-US';
 import localeSettings from './en-US/settings';
 
 export default {
+  'menu.works': 'Works',
   'menu.dashboard': 'Dashboard',
   'menu.server.dashboard': 'Dashboard-Server',
   'menu.server.workplace': 'Workplace-Server',
@@ -49,6 +52,7 @@ export default {
   ...localeLogin,
   ...localeWorkplace,
 
+  ...localePixel,
   ...localeMonitor,
   ...localeSearchTable,
   ...localeCardList,

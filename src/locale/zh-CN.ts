@@ -1,6 +1,8 @@
 import localeMessageBox from '@/components/message-box/locale/zh-CN';
 import localeLogin from '@/views/login/locale/zh-CN';
 
+import localePixel from '@/views/works/pixel/locale/zh-CN';
+
 import localeWorkplace from '@/views/dashboard/workplace/locale/zh-CN';
 
 import localeMonitor from '@/views/dashboard/monitor/locale/zh-CN';
@@ -29,6 +31,7 @@ import localeUserSetting from '@/views/user/setting/locale/zh-CN';
 import localeSettings from './zh-CN/settings';
 
 export default {
+  'menu.works': '工作区',
   'menu.dashboard': '仪表盘',
   'menu.server.dashboard': '仪表盘-服务端',
   'menu.server.workplace': '工作台-服务端',
@@ -49,6 +52,7 @@ export default {
   ...localeLogin,
   ...localeWorkplace,
 
+  ...localePixel,
   ...localeMonitor,
   ...localeSearchTable,
   ...localeCardList,
