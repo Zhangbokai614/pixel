@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="pixel-canvas">
-      <PixelCanvas />
+      <PixelDiv />
     </div>
     <div class="right-side">
 
@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-  import PixelCanvas from './components/pixel-canvas.vue';
+  import PixelDiv from './components/pixel-div.vue';
 </script>
 
 <script lang="ts">
@@ -21,18 +21,20 @@
 
 <style lang="less" scoped>
   .container {
+    display: flex;
     background-color: var(--color-fill-2);
     padding: 16px 20px;
     padding-bottom: 0;
-    display: flex;
     height: calc(~"100vh - 100px"); // 100px = footer(40) + navbar(60)  
   }
 
   .pixel-canvas {
+    display: flex;
     flex: 1;
     overflow: auto;
     height: 100%;
-    background-color: var(--color-fill-3);
+    width: calc(~"100vh - 100px");
+    background-color: var(--color-fill-4);
   }
 
   .right-side {
@@ -42,17 +44,3 @@
 
 </style>
 
-<style lang="less" scoped>
-  // responsive
-  .mobile {
-    .container {
-      display: block;
-    }
-    .right-side {
-      // display: none;
-      width: 100%;
-      margin-left: 0;
-      margin-top: 16px;
-    }
-  }
-</style>
