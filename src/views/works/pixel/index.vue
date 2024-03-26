@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="pixel-canvas">
-      <PixelDiv />
+      <PixelCanvas />
     </div>
     <div class="right-side">
 
@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-  import PixelDiv from './components/pixel-div.vue';
+  import PixelCanvas from './components/pixel-canvas.vue';
 </script>
 
 <script lang="ts">
