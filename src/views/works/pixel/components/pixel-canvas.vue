@@ -1,46 +1,33 @@
 <template>
   <div class="pixels">
     <canvas
-      class="pixel-canvas"
       ref="canvas"
+      :style="{backgroundColor: '#ffffff' }"
       :width=canvasWidth
       :height=canvasHeight
       @mousemove="draw"
+      @click="draw"
       @mousedown="penDown"
       @mouseup="penUp"
-      @mouseleave="penUp"
     >
     </canvas>
   </div>
-  <a-button type="primary" @click="clear">
-      <template #icon>
-        <icon-delete />
-      </template>
-      <!-- Use the default slot to avoid extra spaces -->
-      <template #default>Clear</template>
-  </a-button>
 </template>
 
 <script lang="ts" setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, watch } from 'vue';
+  import { usePixelStore } from '@/store';
  
-  type Item = { color: string, size: number }
+  const props = defineProps(['canvasWidth', 'canvasHeight', 'size', 'spacing', 'penColor'])
+  const { canvasWidth, canvasHeight, size, spacing, penColor } = props
+  
+  const pixelStore = usePixelStore()
+  const gridSize = pixelStore.getGridSize
+  const gridOffset = pixelStore.getGridOffset
 
-  const canvasWidth = 800
-  const canvasHeight = 800
-  const size = 36
-  const spacing = 1
-  const defaultColor = '#cfcfcf'
-  const penColor = '#ffeecc'
+  let { pixels } = pixelStore
 
-  const x = Math.floor(canvasWidth / size)
-  const y = Math.floor(canvasHeight / size)
-  const offsetX = (canvasWidth % size) / 2
-  const offsetY = (canvasHeight % size) / 2
-
-  const pixels = ref<Item[][]>([])
   const canvas = ref()
-  const ctx = ref()
   const pen = ref(false)
 
   const penDown = () => {
@@ -51,30 +38,26 @@
     pen.value = false
   }
 
-  const drawRect = (ctx: any, x: number, y: number, size: number) => {
-    ctx.value.fillRect(x, y, size, size);
+  const drawCell = (ctx: any, x: number, y: number) => {
+    const fillSize = size - spacing
+
+    ctx.fillRect(x, y, fillSize, fillSize);
   }
 
-  const initCanvas = () => {
-    ctx.value.fillStyle = defaultColor
-    ctx.value.lineWidth = spacing
+  const fillCell = (ctx: any, x: number, y: number, color: string) => {
+    pixelStore.canvasCtx.fillStyle = color
 
-    for (let i = 0; i < y; i += 1) {
-      const row = []
+    drawCell(ctx, gridOffset.x + x * size, gridOffset.y + y * size)
+  }
 
-      for (let j = 0; j < x; j += 1) {
-        row.push({ color: defaultColor, size })
-        
-        drawRect(ctx, offsetX + i * size, offsetY + j * size, size - spacing)
+  const render = () => {
+    pixelStore.canvasCtx.lineWidth = pixelStore.spacing
+
+    for (let i = 0; i < pixels.length; i += 1) {
+      for (let j = 0; j < pixels[i].length; j += 1) {
+        fillCell(pixelStore.canvasCtx, i, j, pixels[i][j].color)
       }
-
-      pixels.value.push(row);
     }
-  }
-
-  const clear = () => {
-    pixels.value = []
-    initCanvas()
   }
 
   const screenToCanvas = (screenX: number, screenY: number) => {
@@ -82,40 +65,42 @@
 
     return {
       x: screenX - cr.left, 
-      y: screenY - cr.top}
+      y: screenY - cr.top
+    }
   }
 
   const canvasToGrid = (x: number, y: number) => {
-    const gridX = Math.floor((x + offsetX) / size) 
-    const gridY = Math.floor((y + offsetY) / size) 
+    const gridX = Math.floor((x + gridOffset.x) / size) 
+    const gridY = Math.floor((y + gridOffset.y) / size) 
 
     return {gridX, gridY}
   }
 
-  const fillCell = (ctx: any, x: number, y: number) => {
-    drawRect(ctx, offsetX + x * size, offsetY + y * size, size - spacing)
-  }
-
   const draw = (e: any) => {
-    if (!pen.value) {
+    if (!pen.value && e.pointerType !== 'mouse') {
       return
     }
 
     const canvasP = screenToCanvas(e.clientX, e.clientY)
     const gridCell = canvasToGrid(canvasP.x, canvasP.y)
 
-    if (gridCell.gridX >= x || gridCell.gridY >= y) {
+    if (gridCell.gridX >= gridSize.x || gridCell.gridY >= gridSize.y) {
       return
     }
 
-    ctx.value.fillStyle = penColor
-    fillCell(ctx, gridCell.gridX, gridCell.gridY)
+    pixels[gridCell.gridX][gridCell.gridY].color = penColor
+    fillCell(pixelStore.canvasCtx, gridCell.gridX, gridCell.gridY, penColor)
   }
 
   onMounted(() => {
-    ctx.value = canvas.value.getContext('2d')
+    pixelStore.canvasCtx = canvas.value.getContext('2d')
     
-    initCanvas()
+    render()
+  })
+
+  pixelStore.$subscribe((mutation, state) => {
+    pixels = state.pixels
+    render()
   })
 
 </script>
@@ -134,10 +119,6 @@
     align-items: center;
     flex: 1;
     height: 100%;
-  }
-
-  .pixel-canvas {
-    background-color: #ffffff;
   }
   
 </style>

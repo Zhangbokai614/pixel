@@ -1,16 +1,35 @@
 <template>
   <div class="container">
-    <div class="pixel-canvas">
-      <PixelCanvas />
+    <div class="pixel-canvas" >
+      <PixelCanvas v-if="!load" v-bind="pixelStore.$state"/>
     </div>
     <div class="right-side">
-
+      <a-button type="primary" @click="pixelStore.clear">
+        <template #icon>
+          <icon-delete />
+        </template>
+        <!-- Use the default slot to avoid extra spaces -->
+        <template #default>Clear</template>
+      </a-button>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+  import { onMounted, ref } from 'vue';
+  import { usePixelStore } from '@/store';
   import PixelCanvas from './components/pixel-canvas.vue';
+
+  const pixelStore = usePixelStore()
+  const canvasConfig = ref(pixelStore.$state)
+  const load = ref(true)
+
+  onMounted(() => {
+    load.value = false
+
+    pixelStore.initCanvas()
+  }) 
+
 </script>
 
 <script lang="ts">
