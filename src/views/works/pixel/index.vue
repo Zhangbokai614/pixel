@@ -1,14 +1,29 @@
 <template>
   <div class="container">
     <div class="pixel-canvas" >
-      <PixelCanvas v-if="!load" v-bind="pixelStore.$state"/>
+      <PixelCanvas 
+        v-if="!load" 
+        v-bind="pixelStore.$state"
+        @mousemove="draw"
+        @click="draw"
+        @mousedown="penDown"
+        @mouseup="penUp"
+        @mouseleave="penUp"
+      />
     </div>
     <div class="right-side">
+      <a-color-picker 
+        :defaultValue="pixelStore.penColor" 
+        :v-mode="pixelStore.penColor"
+         hideTrigger 
+         showHistory 
+         showPreset
+         @change="pixelStore.changePenColor"
+      />
       <a-button type="primary" @click="pixelStore.clear">
         <template #icon>
           <icon-delete />
         </template>
-        <!-- Use the default slot to avoid extra spaces -->
         <template #default>Clear</template>
       </a-button>
     </div>
@@ -21,13 +36,32 @@
   import PixelCanvas from './components/pixel-canvas.vue';
 
   const pixelStore = usePixelStore()
-  const canvasConfig = ref(pixelStore.$state)
   const load = ref(true)
+  const pen = ref(false)
+
+  const penDown = () => {
+    pen.value = true
+  }
+
+  const penUp = () => {
+    pen.value = false
+  }
+
+  const draw = (e: any) => {
+    if (!pen.value && e.pointerType !== 'mouse') {
+      return
+    }
+
+    const pElem = document.getElementsByTagName("canvas")[0]
+    const domRect = pElem !== null ? pElem.getBoundingClientRect() : {x: 0, y: 0}
+
+    pixelStore.draw(domRect.x, domRect.y,  e.clientX, e.clientY)
+  }
 
   onMounted(() => {
     load.value = false
 
-    pixelStore.initCanvas()
+    pixelStore.initPixels()
   }) 
 
 </script>

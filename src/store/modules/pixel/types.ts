@@ -8,5 +8,4 @@ export interface PixelCanvas {
   defaultColor: string;
   penColor: string;
   pixels: PixelCell[][]; // status map to canvas
-  canvasCtx: any;
 }

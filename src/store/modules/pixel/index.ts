@@ -11,7 +11,6 @@ const usePixelStore = defineStore('pixel', {
     defaultColor: '#efefef',
     penColor: '#eeddff',
     pixels: [],
-    canvasCtx: {},
   }),
 
   getters: {
@@ -31,7 +30,7 @@ const usePixelStore = defineStore('pixel', {
   },
 
   actions: {
-    initCanvas() {
+    initPixels() {
       this.pixels = []
 
       const grisSize = this.getGridSize
@@ -45,9 +44,36 @@ const usePixelStore = defineStore('pixel', {
         this.pixels.push(row);
       }
     },
+  
+    screenToGrid(cl: number, ct: number, sx: number, sy: number) {
+      const x = sx - cl
+      const y = sy - ct
+
+      const gridOffset = this.getGridOffset
+
+      const gridX = Math.floor((x + gridOffset.x) / this.size) 
+      const gridY = Math.floor((y + gridOffset.y) / this.size) 
+  
+      return {gridX, gridY}
+    },
+  
+    draw(cl: number, ct: number, sx: number, sy: number) {
+      const gridCell = this.screenToGrid(cl, ct, sx, sy)
+      const gridSize = this.getGridSize
+
+      if (gridCell.gridX >= gridSize.x || gridCell.gridY >= gridSize.y) {
+        return
+      }
+  
+      this.pixels[gridCell.gridX][gridCell.gridY].color = this.penColor
+    },
+
+    changePenColor(color: string) {
+      this.penColor = color
+    },
 
     clear() {
-      this.initCanvas()
+      this.initPixels()
     },
   },
 });
