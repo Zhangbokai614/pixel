@@ -71,31 +71,23 @@ setupMock({
     Mock.mock(new RegExp('/api/user/menu'), () => {
       const menuList = [
         {
-          path: '/dashboard',
-          name: 'dashboard',
+          path: '/works',
+          name: 'works',
           meta: {
-            locale: 'menu.server.dashboard',
+            locale: 'menu.server.works',
             requiresAuth: true,
             icon: 'icon-dashboard',
             order: 1,
           },
           children: [
             {
-              path: 'workplace',
-              name: 'Workplace',
+              path: 'pixel',
+              name: 'pixel',
               meta: {
-                locale: 'menu.server.workplace',
+                locale: 'menu.server.pixel',
                 requiresAuth: true,
               },
-            },
-            {
-              path: 'https://arco.design',
-              name: 'arcoWebsite',
-              meta: {
-                locale: 'menu.arcoWebsite',
-                requiresAuth: true,
-              },
-            },
+            }
           ],
         },
       ];
