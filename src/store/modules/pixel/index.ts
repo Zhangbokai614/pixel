@@ -8,9 +8,16 @@ const usePixelStore = defineStore('pixel', {
     canvasHeight: 800,
     size: 36,
     spacing: 1,
-    defaultColor: '#efefef',
-    penColor: '#eeddff',
+    backgroundColor: '#EFEFEF',
+    defaultColor: '#FFFFFF',
+    penColor: '#3C7EFF',
     pixels: [],
+    currentCell: { x: 0, y: 0 },
+    hoverColor: '#A2C2FF',
+    hoverCell: { current: { x: 0, y: 0 }, previous: { x: 0, y: 0 } },
+    historyColor: [],
+    historyMax: 11,
+    clearFlag: false,
   }),
 
   getters: {
@@ -38,7 +45,7 @@ const usePixelStore = defineStore('pixel', {
         const row = []
         
         for (let j = 0; j < grisSize.x; j += 1) {
-            row.push({ color: this.defaultColor })
+            row.push({ color: this.defaultColor, hover: false })
         }
   
         this.pixels.push(row);
@@ -46,34 +53,69 @@ const usePixelStore = defineStore('pixel', {
     },
   
     screenToGrid(cl: number, ct: number, sx: number, sy: number) {
-      const x = sx - cl
-      const y = sy - ct
-
       const gridOffset = this.getGridOffset
 
-      const gridX = Math.floor((x + gridOffset.x) / this.size) 
-      const gridY = Math.floor((y + gridOffset.y) / this.size) 
+      const gridX = Math.floor((sx - cl + gridOffset.x) / this.size) 
+      const gridY = Math.floor((sy - ct + gridOffset.y) / this.size) 
   
-      return {gridX, gridY}
+      return { x: gridX, y: gridY}
     },
   
     draw(cl: number, ct: number, sx: number, sy: number) {
       const gridCell = this.screenToGrid(cl, ct, sx, sy)
       const gridSize = this.getGridSize
 
-      if (gridCell.gridX >= gridSize.x || gridCell.gridY >= gridSize.y) {
+      if (gridCell.x >= gridSize.x || gridCell.y >= gridSize.y) {
         return
       }
   
-      this.pixels[gridCell.gridX][gridCell.gridY].color = this.penColor
+      this.updateHistoryColor(this.penColor)
+
+      this.pixels[gridCell.x][gridCell.y].color = this.penColor
+      this.currentCell = gridCell
+    },
+
+    hover(cl: number, ct: number, sx: number, sy: number) {
+      const gridCell = this.screenToGrid(cl, ct, sx, sy)
+      const gridSize = this.getGridSize
+
+      if (gridCell.x >= gridSize.x || gridCell.y >= gridSize.y) {
+        return
+      }
+  
+      if (gridCell.x === this.hoverCell.current.x && gridCell.y === this.hoverCell.current.y) {
+        return
+      }
+
+      this.hoverCell.previous = this.hoverCell.current
+      this.hoverCell.current = gridCell
     },
 
     changePenColor(color: string) {
       this.penColor = color
     },
 
+    updateHistoryColor(color: string) {
+      const l = this.historyColor.length
+      for (let i = 0; i < l; i += 1) {
+        if (this.historyColor[i] === color) {
+          return
+        }
+      }
+
+      if (l >= this.historyMax) {
+        const historyColor = []
+        historyColor.push(color, ...this.historyColor.slice(0, this.historyMax))
+
+        return
+      }
+
+      this.historyColor.push(color)
+    },
+
     clear() {
       this.initPixels()
+      this.clearFlag = !this.clearFlag
     },
   },
 });

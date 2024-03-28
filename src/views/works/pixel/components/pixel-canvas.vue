@@ -1,12 +1,18 @@
 <template>
   <div class="pixels">
+    <p class="spacing"></p>
     <canvas
       ref="canvas"
-      :style="{backgroundColor: '#ffffff' }"
+      :style="{backgroundColor: backgroundColor }"
       :width=canvasWidth
       :height=canvasHeight
     >
     </canvas>
+    <a-typography-text type="secondary" class="pixel-info">{{ `
+      x: ${hoverCell.current.x}, 
+      y: ${hoverCell.current.y}, 
+      color: ${pixels[hoverCell.current.x][hoverCell.current.y].color}
+    `}}</a-typography-text>
   </div>
 </template>
 
@@ -20,21 +26,19 @@
   const pixelStore = usePixelStore()
   const gridOffset = pixelStore.getGridOffset
 
-  let { pixels, penColor } = pixelStore
+  let { pixels, currentCell, hoverCell, clearFlag, hoverColor, backgroundColor } = pixelStore
 
   const canvas = ref()
   const canvasCtx = ref()
 
-  const drawCell = (ctx: any, x: number, y: number) => {
+  const fillCell = (ctx: any, x: number, y: number, color: string) => {
+    const cellX = gridOffset.x + x * size
+    const cellY = gridOffset.y + y * size
     const fillSize = size - spacing
 
-    ctx.fillRect(x, y, fillSize, fillSize);
-  }
-
-  const fillCell = (ctx: any, x: number, y: number, color: string) => {
     canvasCtx.value.fillStyle = color
 
-    drawCell(ctx, gridOffset.x + x * size, gridOffset.y + y * size)
+    ctx.fillRect(cellX, cellY, fillSize, fillSize);
   }
 
   const render = () => {
@@ -43,6 +47,37 @@
         fillCell(canvasCtx.value, i, j, pixels[i][j].color)
       }
     }
+  }
+
+  const borderCell = (ctx: any, x: number, y: number) => {
+    const cellX = gridOffset.x + x * size - (spacing * 0.5)
+    const cellY = gridOffset.y + y * size - (spacing * 0.5)
+    const strokeSize = size
+
+    canvasCtx.value.strokeStyle = hoverColor
+
+    ctx.strokeRect(cellX, cellY, strokeSize, strokeSize);
+  }
+
+  const clearBorderCell = (ctx: any, x: number, y: number) => {
+    const cellX = gridOffset.x + x * size - (spacing * 0.5)
+    const cellY = gridOffset.y + y * size - (spacing * 0.5)
+    const strokeSize = size
+
+    canvasCtx.value.strokeStyle = backgroundColor
+
+    ctx.strokeRect(cellX, cellY, strokeSize, strokeSize);
+  }
+
+  const hover = () => {
+    clearBorderCell(canvasCtx.value, hoverCell.previous.x, hoverCell.previous.y)
+    borderCell(canvasCtx.value, hoverCell.current.x, hoverCell.current.y)
+  }
+
+  const draw = () => {
+    const { x, y } = currentCell
+
+    fillCell(canvasCtx.value, x, y, pixels[x][y].color)
   }
 
   const initPen = () => {
@@ -58,11 +93,24 @@
 
   pixelStore.$subscribe((_, state) => {
     pixels = state.pixels
-    penColor = state.penColor
-    
-    canvasCtx.value.fillStyle = state.penColor
+    currentCell = state.currentCell
 
-    render()
+    hoverCell = state.hoverCell
+    hoverColor = state.hoverColor
+    backgroundColor = state.backgroundColor
+    
+    if (hoverCell.current !== hoverCell.previous) {
+      hover()
+    }
+
+    if (clearFlag === state.clearFlag) {
+      draw()
+
+    } else {
+      clearFlag = state.clearFlag
+
+      render()
+    }
   })
 
 </script>
@@ -76,11 +124,22 @@
 <style lang="less" scoped>
   .pixels {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     flex: 1;
     height: 100%;
+    margin-left: auto
+  }
+
+  .spacing {
+    flex: 1;
+  }
+
+  .pixel-info {
+    flex: 1;
+    text-align: right;
+    align-self: flex-end;
+    margin: 16px;
   }
   
 </style>

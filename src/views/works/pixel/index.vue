@@ -11,16 +11,18 @@
         @mouseleave="penUp"
       />
     </div>
-    <div class="right-side">
-      <a-color-picker 
+    <div class="tools">
+      <a-color-picker
         :defaultValue="pixelStore.penColor" 
         :v-mode="pixelStore.penColor"
+        :history-colors="pixelStore.historyColor"
+        :style="{ width: '100%' }"
          hideTrigger 
          showHistory 
          showPreset
          @change="pixelStore.changePenColor"
       />
-      <a-button type="primary" @click="pixelStore.clear">
+      <a-button type="primary" status="danger" @click="pixelStore.clear" class="clear-button">
         <template #icon>
           <icon-delete />
         </template>
@@ -48,12 +50,17 @@
   }
 
   const draw = (e: any) => {
-    if (!pen.value && e.pointerType !== 'mouse') {
+    const pElem = document.getElementsByTagName("canvas")[0]
+    if (pElem === null) {
       return
     }
+    const domRect = pElem.getBoundingClientRect()
 
-    const pElem = document.getElementsByTagName("canvas")[0]
-    const domRect = pElem !== null ? pElem.getBoundingClientRect() : {x: 0, y: 0}
+    if (!pen.value && e.pointerType !== 'mouse') {
+      pixelStore.hover(domRect.x, domRect.y,  e.clientX, e.clientY)
+
+      return
+    }
 
     pixelStore.draw(domRect.x, domRect.y,  e.clientX, e.clientY)
   }
@@ -90,9 +97,18 @@
     background-color: var(--color-fill-4);
   }
 
-  .right-side {
+  .tools {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
     width: 280px;
     margin-left: 16px;
+    background-color: var(--color-fill-4);
+  }
+
+  .clear-button{
+    align-self: flex-end;
   }
 
 </style>
