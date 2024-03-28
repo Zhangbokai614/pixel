@@ -12,6 +12,25 @@
       />
     </div>
     <div class="tools">
+      <!-- <a-form :model="from" :style="{ width: '92%' }">
+        <a-divider orientation="center">size</a-divider>
+        <a-form-item class="form-item" field="size" label="x: ">
+          <a-slider 
+            :v-model="pixelStore.gridX" 
+            :default-value="pixelStore.gridX" 
+            :style="{ width: '100%' }" 
+            @change="pixelStore.changeGridX"
+          />
+        </a-form-item>
+        <a-form-item class="form-item" field="size" label="y: ">
+          <a-slider 
+            :v-model="pixelStore.gridY" 
+            :default-value="pixelStore.gridX" 
+            :style="{ width: '100%' }"
+            @change="pixelStore.changeGridY"
+          />
+        </a-form-item>
+      </a-form> -->
       <a-color-picker
         :defaultValue="pixelStore.penColor" 
         :v-mode="pixelStore.penColor"
@@ -40,6 +59,7 @@
   const load = ref(true)
   const pen = ref(false)
   const pElem = ref()
+  const from = ref({})
 
   const penDown = () => {
     pen.value = true
@@ -102,7 +122,11 @@
     justify-content: space-between;
     width: 280px;
     margin-left: 16px;
-    background-color: var(--color-fill-4);
+    background-color: #FFFFFF;
+  }
+
+  .form-item {
+    box-shadow: inset;
   }
 
   .clear-button{

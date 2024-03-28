@@ -4,7 +4,8 @@ export type Cell = { x: number, y: number}
 export interface PixelCanvas {
   canvasWidth: number;
   canvasHeight: number;
-  size: number;
+  gridX: number;
+  gridY: number;
   spacing: number;
   backgroundColor: string;
   defaultColor: string;

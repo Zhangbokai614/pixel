@@ -2,8 +2,8 @@
   <div class="pixels">
     <a-space class="pixel-info" direction="vertical" fill>
       <a-typography-text type="secondary">{{ `(
-        x: ${gridSize.x}, 
-        y: ${gridSize.y}, 
+        x: ${pixelStore.gridX}, 
+        y: ${pixelStore.gridY}, 
       )`}}</a-typography-text>
       <a-typography-text type="secondary">{{ `(
         x: ${hoverCell.current.x}, 
@@ -14,8 +14,8 @@
     <canvas
       ref="canvas"
       :style="{backgroundColor: backgroundColor }"
-      :width=canvasWidth
-      :height=canvasHeight
+      :width="canvasWidth"
+      :height="canvasHeight"
     >
     </canvas>
     <p class="spacing"></p>
@@ -26,12 +26,12 @@
   import { ref, onMounted, watch } from 'vue';
   import { usePixelStore } from '@/store';
  
-  const props = defineProps(['canvasWidth', 'canvasHeight', 'size', 'spacing'])
-  const { canvasWidth, canvasHeight, size, spacing } = props
+  const props = defineProps(['canvasWidth', 'canvasHeight', 'spacing'])
+  const { canvasWidth, canvasHeight, spacing } = props
   
   const pixelStore = usePixelStore()
   const gridOffset = pixelStore.getGridOffset
-  const gridSize = pixelStore.getGridSize
+  const { size } = pixelStore.getCellSize
 
   let { pixels, currentCell, hoverCell, clearFlag, backgroundColor, penColor } = pixelStore
 
@@ -39,6 +39,7 @@
   const canvasCtx = ref()
 
   const fillCell = (ctx: any, x: number, y: number, color: string) => {
+    
     const cellX = gridOffset.x + x * size
     const cellY = gridOffset.y + y * size
     const fillSize = size - spacing

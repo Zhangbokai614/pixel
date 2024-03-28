@@ -4,9 +4,10 @@ import { PixelCanvas } from './types';
 
 const usePixelStore = defineStore('pixel', {
   state: (): PixelCanvas => ({
-    canvasWidth: 800,
-    canvasHeight: 800,
-    size: 24,
+    canvasWidth: 808,
+    canvasHeight: 808,
+    gridX: 64,
+    gridY: 64,
     spacing: 1,
     backgroundColor: '#EFEFEF',
     defaultColor: '#FFFFFF',
@@ -20,17 +21,16 @@ const usePixelStore = defineStore('pixel', {
   }),
 
   getters: {
-    getGridSize(): { x: number; y: number; } {
-      return {
-        x: Math.floor(this.canvasWidth / this.size),
-        y: Math.floor(this.canvasHeight / this.size)
-      }
+    getCellSize(): { size: number } {
+      const count = Math.max(this.gridX, this.gridY)
+
+      return { size: Math.floor(this.canvasWidth / count) }
     },
 
     getGridOffset(): { x: number; y: number; } {
       return {
-        x: (this.canvasWidth % this.size) / 2,
-        y: (this.canvasHeight % this.size) / 2
+        x: (this.canvasWidth - this.getCellSize.size * this.gridX) / 2,
+        y: (this.canvasHeight - this.getCellSize.size * this.gridY) / 2
       }
     },
   },
@@ -39,11 +39,10 @@ const usePixelStore = defineStore('pixel', {
     initPixels() {
       this.pixels = []
 
-      const grisSize = this.getGridSize
-      for (let i = 0; i < grisSize.y; i += 1) {
+      for (let i = 0; i < this.gridX; i += 1) {
         const row = []
         
-        for (let j = 0; j < grisSize.x; j += 1) {
+        for (let j = 0; j < this.gridY; j += 1) {
             row.push({ color: this.defaultColor, hover: false })
         }
   
@@ -54,17 +53,16 @@ const usePixelStore = defineStore('pixel', {
     screenToGrid(cl: number, ct: number, sx: number, sy: number) {
       const gridOffset = this.getGridOffset
 
-      const gridX = Math.floor((sx - cl + gridOffset.x) / this.size) 
-      const gridY = Math.floor((sy - ct + gridOffset.y) / this.size) 
+      const gridX = Math.floor((sx - (cl + gridOffset.x)) / this.getCellSize.size) 
+      const gridY = Math.floor((sy - (ct + gridOffset.y)) / this.getCellSize.size) 
   
       return { x: gridX, y: gridY}
     },
   
     draw(cl: number, ct: number, sx: number, sy: number) {
       const gridCell = this.screenToGrid(cl, ct, sx, sy)
-      const gridSize = this.getGridSize
 
-      if (gridCell.x >= gridSize.x || gridCell.y >= gridSize.y) {
+      if (gridCell.x >= this.gridX || gridCell.y >= this.gridY) {
         return
       }
   
@@ -76,9 +74,8 @@ const usePixelStore = defineStore('pixel', {
 
     hover(cl: number, ct: number, sx: number, sy: number) {
       const gridCell = this.screenToGrid(cl, ct, sx, sy)
-      const gridSize = this.getGridSize
 
-      if (gridCell.x >= gridSize.x || gridCell.y >= gridSize.y) {
+      if (gridCell.x >= this.gridX || gridCell.y >= this.gridY) {
         return
       }
   
@@ -88,6 +85,18 @@ const usePixelStore = defineStore('pixel', {
 
       this.hoverCell.previous = this.hoverCell.current
       this.hoverCell.current = gridCell
+    },
+
+    changeGridX(x: number) {
+      this.gridX = x
+
+      this.initPixels()
+    },
+
+    changeGridY(y: number) {
+      this.gridY = y
+
+      this.initPixels()
     },
 
     changePenColor(color: string) {
