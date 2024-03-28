@@ -6,14 +6,13 @@ const usePixelStore = defineStore('pixel', {
   state: (): PixelCanvas => ({
     canvasWidth: 800,
     canvasHeight: 800,
-    size: 36,
+    size: 24,
     spacing: 1,
     backgroundColor: '#EFEFEF',
     defaultColor: '#FFFFFF',
     penColor: '#3C7EFF',
     pixels: [],
     currentCell: { x: 0, y: 0 },
-    hoverColor: '#A2C2FF',
     hoverCell: { current: { x: 0, y: 0 }, previous: { x: 0, y: 0 } },
     historyColor: [],
     historyMax: 11,
@@ -103,14 +102,9 @@ const usePixelStore = defineStore('pixel', {
         }
       }
 
-      if (l >= this.historyMax) {
-        const historyColor = []
-        historyColor.push(color, ...this.historyColor.slice(0, this.historyMax))
-
-        return
-      }
-
-      this.historyColor.push(color)
+      const historyColor = []
+      historyColor.push(color, ...this.historyColor.slice(0, this.historyMax))
+      this.historyColor = historyColor
     },
 
     clear() {

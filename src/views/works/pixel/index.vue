@@ -4,11 +4,11 @@
       <PixelCanvas 
         v-if="!load" 
         v-bind="pixelStore.$state"
-        @mousemove="draw"
-        @click="draw"
-        @mousedown="penDown"
-        @mouseup="penUp"
-        @mouseleave="penUp"
+        @mousemove.stop="draw"
+        @click.stop="draw"
+        @mousedown.stop="penDown"
+        @mouseup.stop="penUp"
+        @mouseleave.stop="penUp"
       />
     </div>
     <div class="tools">
@@ -19,7 +19,6 @@
         :style="{ width: '100%' }"
          hideTrigger 
          showHistory 
-         showPreset
          @change="pixelStore.changePenColor"
       />
       <a-button type="primary" status="danger" @click="pixelStore.clear" class="clear-button">
@@ -40,6 +39,7 @@
   const pixelStore = usePixelStore()
   const load = ref(true)
   const pen = ref(false)
+  const pElem = ref()
 
   const penDown = () => {
     pen.value = true
@@ -50,11 +50,7 @@
   }
 
   const draw = (e: any) => {
-    const pElem = document.getElementsByTagName("canvas")[0]
-    if (pElem === null) {
-      return
-    }
-    const domRect = pElem.getBoundingClientRect()
+    const domRect = pElem.value[0].getBoundingClientRect()
 
     if (!pen.value && e.pointerType !== 'mouse') {
       pixelStore.hover(domRect.x, domRect.y,  e.clientX, e.clientY)
@@ -67,6 +63,8 @@
 
   onMounted(() => {
     load.value = false
+
+    pElem.value  = document.getElementsByTagName("canvas")
 
     pixelStore.initPixels()
   }) 

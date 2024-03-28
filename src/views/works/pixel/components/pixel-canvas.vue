@@ -1,6 +1,16 @@
 <template>
   <div class="pixels">
-    <p class="spacing"></p>
+    <a-space class="pixel-info" direction="vertical" fill>
+      <a-typography-text type="secondary">{{ `(
+        x: ${gridSize.x}, 
+        y: ${gridSize.y}, 
+      )`}}</a-typography-text>
+      <a-typography-text type="secondary">{{ `(
+        x: ${hoverCell.current.x}, 
+        y: ${hoverCell.current.y}, 
+        color: ${pixels[hoverCell.current.x][hoverCell.current.y].color}
+      )`}}</a-typography-text>
+    </a-space>
     <canvas
       ref="canvas"
       :style="{backgroundColor: backgroundColor }"
@@ -8,11 +18,7 @@
       :height=canvasHeight
     >
     </canvas>
-    <a-typography-text type="secondary" class="pixel-info">{{ `
-      x: ${hoverCell.current.x}, 
-      y: ${hoverCell.current.y}, 
-      color: ${pixels[hoverCell.current.x][hoverCell.current.y].color}
-    `}}</a-typography-text>
+    <p class="spacing"></p>
   </div>
 </template>
 
@@ -25,8 +31,9 @@
   
   const pixelStore = usePixelStore()
   const gridOffset = pixelStore.getGridOffset
+  const gridSize = pixelStore.getGridSize
 
-  let { pixels, currentCell, hoverCell, clearFlag, hoverColor, backgroundColor } = pixelStore
+  let { pixels, currentCell, hoverCell, clearFlag, backgroundColor, penColor } = pixelStore
 
   const canvas = ref()
   const canvasCtx = ref()
@@ -54,7 +61,7 @@
     const cellY = gridOffset.y + y * size - (spacing * 0.5)
     const strokeSize = size
 
-    canvasCtx.value.strokeStyle = hoverColor
+    canvasCtx.value.strokeStyle = penColor
 
     ctx.strokeRect(cellX, cellY, strokeSize, strokeSize);
   }
@@ -96,7 +103,7 @@
     currentCell = state.currentCell
 
     hoverCell = state.hoverCell
-    hoverColor = state.hoverColor
+    penColor = state.penColor
     backgroundColor = state.backgroundColor
     
     if (hoverCell.current !== hoverCell.previous) {
@@ -137,7 +144,7 @@
 
   .pixel-info {
     flex: 1;
-    text-align: right;
+    text-align: left;
     align-self: flex-end;
     margin: 16px;
   }

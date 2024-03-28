@@ -11,7 +11,6 @@ export interface PixelCanvas {
   penColor: string;
   pixels: PixelCell[][]; // status map to canvas
   currentCell: Cell;
-  hoverColor: string;
   hoverCell: { current: Cell, previous: Cell };
   historyColor: string[];
   historyMax: number;
