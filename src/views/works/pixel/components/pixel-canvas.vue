@@ -97,6 +97,15 @@
     
     initPen()
     render()
+
+    let scale = 1;
+    canvas.value.addEventListener('wheel', (e: any) => {
+      e.preventDefault(); 
+      const delta = Math.max(-1, Math.min(1, e.deltaY)); 
+      scale -= delta * 0.1;
+      scale = Math.max(0.5, Math.min(scale, 8));
+      canvas.value.style.transform = `scale(${scale})`;
+    });
   })
 
   pixelStore.$subscribe((_, state) => {
