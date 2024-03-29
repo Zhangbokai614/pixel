@@ -4,42 +4,39 @@
       <PixelCanvas 
         v-if="!load" 
         v-bind="pixelStore.$state"
-        @mousemove.stop="draw"
-        @click.stop="draw"
-        @mousedown.stop="penDown"
-        @mouseup.stop="penUp"
-        @mouseleave.stop="penUp"
+        :style="{ cursor:  currentTools }"
+        @mousemove.stop="mouseHandler"
+        @click.stop="mouseHandler"
+        @mousedown.stop="mouseDown"
+        @mouseup.stop="mouseUp"
+        @mouseleave.stop="mouseUp"
       />
     </div>
     <div class="tools">
-      <!-- <a-form :model="from" :style="{ width: '92%' }">
-        <a-divider orientation="center">size</a-divider>
-        <a-form-item class="form-item" field="size" label="x: ">
-          <a-slider 
-            :v-model="pixelStore.gridX" 
-            :default-value="pixelStore.gridX" 
-            :style="{ width: '100%' }" 
-            @change="pixelStore.changeGridX"
-          />
-        </a-form-item>
-        <a-form-item class="form-item" field="size" label="y: ">
-          <a-slider 
-            :v-model="pixelStore.gridY" 
-            :default-value="pixelStore.gridX" 
-            :style="{ width: '100%' }"
-            @change="pixelStore.changeGridY"
-          />
-        </a-form-item>
-      </a-form> -->
-      <a-color-picker
-        :defaultValue="pixelStore.penColor" 
-        :v-mode="pixelStore.penColor"
-        :history-colors="pixelStore.historyColor"
-        :style="{ width: '100%' }"
-         hideTrigger 
-         showHistory 
-         @change="pixelStore.changePenColor"
-      />
+      <a-space direction="vertical" :style="{ margin: '8px' }">
+        <a-color-picker
+          :defaultValue="pixelStore.penColor" 
+          :v-mode="pixelStore.penColor"
+          :history-colors="pixelStore.historyColor"
+          :style="{ width: '100%' }"
+          hideTrigger 
+          showHistory 
+          @change="pixelStore.changePenColor"
+        />
+        <a-divider orientation="center" :style="{ marginTop: '32px' }">Tools</a-divider>
+        <a-space>
+          <a-button type="primary" @click="switchTools('pen')">
+            <template #icon>
+              <icon-pen />
+            </template>
+          </a-button>
+          <a-button type="primary" @click="switchTools('grab')">
+            <template #icon>
+              <icon-drag-arrow />
+            </template>
+          </a-button>
+        </a-space>
+      </a-space>
       <a-button type="primary" status="danger" @click="pixelStore.clear" class="clear-button">
         <template #icon>
           <icon-delete />
@@ -55,22 +52,48 @@
   import { usePixelStore } from '@/store';
   import PixelCanvas from './components/pixel-canvas.vue';
 
+  const toolsMouse = new Map([
+    ['pen', 'crosshair'],
+    ['grab', 'grab'],
+  ])
+
   const pixelStore = usePixelStore()
   const load = ref(true)
   const pen = ref(false)
+  const currentTools = ref(toolsMouse.get('pen'))
   const pElem = ref()
   const from = ref({})
 
-  const penDown = () => {
-    pen.value = true
+  const switchTools = (tools: string) => {
+    currentTools.value = toolsMouse.get(tools)
   }
 
-  const penUp = () => {
-    pen.value = false
+  const mouseDown = () => {
+    if (currentTools.value === toolsMouse.get('pen')) {
+      pen.value = true
+    }
+  }
+
+  const mouseUp = () => {
+    if ((currentTools.value === toolsMouse.get('pen'))) {
+      pen.value = false
+    }
+  }
+
+  const mouseHandler = (e: any) => {
+    switch(currentTools.value) {
+      case toolsMouse.get('pen'):
+        draw(e)
+        break
+      case toolsMouse.get('grab'):
+      default:
+    }
   }
 
   const draw = (e: any) => {
     const domRect = pElem.value[0].getBoundingClientRect()
+    pixelStore.canvasWidth = domRect.width
+    pixelStore.canvasHeight = domRect.height
 
     if (!pen.value && e.pointerType !== 'mouse') {
       pixelStore.hover(domRect.x, domRect.y,  e.clientX, e.clientY)
