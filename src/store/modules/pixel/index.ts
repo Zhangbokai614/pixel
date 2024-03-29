@@ -4,8 +4,8 @@ import { PixelCanvas } from './types';
 
 const usePixelStore = defineStore('pixel', {
   state: (): PixelCanvas => ({
-    canvasWidth: 808,
-    canvasHeight: 808,
+    canvasWidth: 800,
+    canvasHeight: 800,
     gridX: 64,
     gridY: 64,
     spacing: 1,
@@ -62,7 +62,7 @@ const usePixelStore = defineStore('pixel', {
     draw(cl: number, ct: number, sx: number, sy: number) {
       const gridCell = this.screenToGrid(cl, ct, sx, sy)
 
-      if (gridCell.x >= this.gridX || gridCell.y >= this.gridY) {
+      if (gridCell.x >= this.gridX || gridCell.x < 0 || gridCell.y >= this.gridY || gridCell.y < 0) {
         return
       }
   
@@ -74,6 +74,10 @@ const usePixelStore = defineStore('pixel', {
 
     hover(cl: number, ct: number, sx: number, sy: number) {
       const gridCell = this.screenToGrid(cl, ct, sx, sy)
+
+      if (gridCell.x >= this.gridX || gridCell.x < 0 || gridCell.y >= this.gridY || gridCell.y < 0) {
+        return
+      }
 
       if (gridCell.x >= this.gridX || gridCell.y >= this.gridY) {
         return
