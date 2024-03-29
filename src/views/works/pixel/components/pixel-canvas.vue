@@ -1,6 +1,7 @@
 <template>
   <div class="pixels">
-    <a-space class="pixel-info" direction="vertical" fill>
+    <p class="spacing"></p>
+    <a-space class="pixel-info" direction="vertical" fill :style="{ zIndex: 1 }">
       <a-typography-text type="secondary">{{ `(
         x: ${pixelStore.gridX}, 
         y: ${pixelStore.gridY}, 
@@ -13,12 +14,29 @@
     </a-space>
     <canvas
       ref="canvas"
-      :style="{backgroundColor: backgroundColor }"
+      :style="{ backgroundColor: backgroundColor, zIndex: 0 }"
       :width="canvasWidth"
       :height="canvasHeight"
     >
     </canvas>
-    <p class="spacing"></p>
+    <a-col class="window-left" >
+      <a-input-number
+        v-model="scale"
+        :style="{width:'160px', margin: '16px'}" 
+        :default-value="1" 
+        :precision="2"
+        :step="0.1"
+        :max="8"
+        :min="0.2"
+        :formatter="(v: number) => { return `${v * 100}%` }"
+        :parser="(v: string) => { return  (Number(v.replace('%', '')) / 100).toFixed(2) }"
+        placeholder="zoom" 
+        mode="button" 
+        size="large" 
+        @change="inputZoom"
+        @click.stop
+      />
+    </a-col>
   </div>
 </template>
 
@@ -37,6 +55,7 @@
 
   const canvas = ref()
   const canvasCtx = ref()
+  const scale = ref(1)
 
   const fillCell = (ctx: any, x: number, y: number, color: string) => {
     
@@ -92,19 +111,30 @@
     canvasCtx.value.lineWidth = pixelStore.spacing
   }
 
+  const mouseWheelZoom = (e: any) => {
+    e.preventDefault(); 
+    const delta = Math.max(-1, Math.min(1, e.deltaY)); 
+    scale.value -= delta * 0.1;
+    zoom()
+  }
+
+  const inputZoom = () => {
+    zoom()
+  }
+
+  const zoom = () => {
+    scale.value = Math.max(0.5, Math.min(scale.value, 8));
+    canvas.value.style.transform = `scale(${scale.value})`;
+  }
+
   onMounted(() => {  
     canvasCtx.value = canvas.value.getContext('2d')
     
     initPen()
     render()
 
-    let scale = 1;
     canvas.value.addEventListener('wheel', (e: any) => {
-      e.preventDefault(); 
-      const delta = Math.max(-1, Math.min(1, e.deltaY)); 
-      scale -= delta * 0.1;
-      scale = Math.max(0.5, Math.min(scale, 8));
-      canvas.value.style.transform = `scale(${scale})`;
+      mouseWheelZoom(e)
     });
   })
 
@@ -141,7 +171,7 @@
 <style lang="less" scoped>
   .pixels {
     display: flex;
-    justify-content: center;
+    justify-content: start;
     align-items: center;
     flex: 1;
     height: 100%;
@@ -153,10 +183,17 @@
   }
 
   .pixel-info {
-    flex: 1;
+    position: absolute;
     text-align: left;
     align-self: flex-end;
     margin: 16px;
+  }
+  
+  .window-left {
+    display: flex;
+    justify-content: end;
+    align-self: flex-start;
+    flex: 1;
   }
   
 </style>

@@ -6,7 +6,7 @@
         v-bind="pixelStore.$state"
         :style="{ cursor:  currentTools }"
         @mousemove.stop="mouseHandler"
-        @click.stop="mouseHandler"
+        @click="mouseHandler"
         @mousedown.stop="mouseDown"
         @mouseup.stop="mouseUp"
         @mouseleave.stop="mouseUp"
