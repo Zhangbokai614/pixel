@@ -1,10 +1,13 @@
 <template>
   <div class="container">
-    <div class="pixel-canvas" >
+    <div class="pixel-canvas">
       <PixelCanvas 
         v-if="!load" 
-        v-bind="pixelStore.$state"
-        :style="{ cursor:  currentTools }"
+        :canvas-height="pixelStore.canvasHeight"
+        :canvas-width="pixelStore.canvasWidth"
+        :spacing="pixelStore.spacing"
+        :currentTools="currentTools"
+        :style="{ cursor: currentTools }"
         @mousemove.stop="mouseHandler"
         @click="mouseHandler"
         @mousedown.stop="mouseDown"
@@ -18,7 +21,8 @@
           :defaultValue="pixelStore.penColor" 
           :v-mode="pixelStore.penColor"
           :history-colors="pixelStore.historyColor"
-          :style="{ width: '100%' }"
+          :style="{ width: '100%', boxShadow: '0 0 0'}"
+          size="medium"
           hideTrigger 
           showHistory 
           @change="pixelStore.changePenColor"
@@ -103,6 +107,19 @@
 
     pixelStore.draw(domRect.x, domRect.y,  e.clientX, e.clientY)
   }
+
+  document.addEventListener('keydown', (e: any) => {
+    e.preventDefault(); 
+    if (e.code === 'Space') {
+      switchTools('grab')
+    }
+
+    document.addEventListener('keyup', (e: any) => {
+      if (e.code === 'Space') {
+        switchTools('pen')
+      }
+    })
+  })
 
   onMounted(() => {
     load.value = false

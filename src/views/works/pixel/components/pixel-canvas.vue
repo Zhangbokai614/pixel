@@ -17,6 +17,10 @@
       :style="{ backgroundColor: backgroundColor, zIndex: 0 }"
       :width="canvasWidth"
       :height="canvasHeight"
+      @mousedown="mouseDown"
+      @mousemove="mouseMove"
+      @mouseup="mouseUp"
+      @mouseleave="mouseUp"
     >
     </canvas>
     <a-col class="window-left" >
@@ -33,7 +37,7 @@
         placeholder="zoom" 
         mode="button" 
         size="large" 
-        @change="inputZoom"
+        @change="zoom"
         @click.stop
       />
     </a-col>
@@ -41,11 +45,17 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, onMounted, watch } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import { usePixelStore } from '@/store';
  
-  const props = defineProps(['canvasWidth', 'canvasHeight', 'spacing'])
+  const props = defineProps(['canvasWidth', 'canvasHeight', 'spacing', 'currentTools'])
   const { canvasWidth, canvasHeight, spacing } = props
+  const currentTools = computed(() => {
+    return props.currentTools
+  })
+  // const  = props['canvas-width']
+  // const  = props['canvas-height']
+  // const  = props['current-tools']
   
   const pixelStore = usePixelStore()
   const gridOffset = pixelStore.getGridOffset
@@ -55,7 +65,11 @@
 
   const canvas = ref()
   const canvasCtx = ref()
+
   const scale = ref(1)
+  const isCatch = ref(false)
+  const catchPoint = ref({ x: 0, y: 0 })
+  const translate = ref({ x: 0, y: 0 })
 
   const fillCell = (ctx: any, x: number, y: number, color: string) => {
     
@@ -111,6 +125,15 @@
     canvasCtx.value.lineWidth = pixelStore.spacing
   }
 
+  const translateCanvas = () => {
+    canvas.value.style.transform = `translate(${translate.value.x}px, ${translate.value.y}px) scale(${scale.value})`
+  }
+
+  const zoom = () => {
+    scale.value = Math.max(0.5, Math.min(scale.value, 8));
+    translateCanvas()
+  }
+
   const mouseWheelZoom = (e: any) => {
     e.preventDefault(); 
     const delta = Math.max(-1, Math.min(1, e.deltaY)); 
@@ -118,13 +141,29 @@
     zoom()
   }
 
-  const inputZoom = () => {
-    zoom()
+  const catchCanvas = (x: number, y: number) => {
+    catchPoint.value = { x, y }
   }
 
-  const zoom = () => {
-    scale.value = Math.max(0.5, Math.min(scale.value, 8));
-    canvas.value.style.transform = `scale(${scale.value})`;
+  const mouseDown = (e: any) => {
+    if (currentTools.value === 'grab') {
+      catchCanvas(e.clientX, e.clientY)
+      isCatch.value = true
+    }
+  }
+
+  const mouseMove = (e: any) => {
+    if (isCatch.value) {
+      translate.value.x += e.clientX - catchPoint.value.x
+      translate.value.y += e.clientY - catchPoint.value.y
+
+      catchCanvas(e.clientX, e.clientY)
+      translateCanvas()
+    }
+  }
+
+  const mouseUp = (e: any) => {
+    isCatch.value = false
   }
 
   onMounted(() => {  
