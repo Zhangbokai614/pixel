@@ -54,15 +54,15 @@
 
 <script lang="ts" setup>
   import { onMounted, ref } from 'vue';
-  import { usePixelStore } from '@/store';
-  import PixelCanvas from './components/pixel-canvas.vue';
+  import { usePixelGridStore } from '@/store';
+  import PixelCanvas from './components/pixel-grid.vue';
 
   const toolsMouse = new Map([
     ['pen', 'crosshair'],
     ['grab', 'grab'],
   ])
 
-  const pixelStore = usePixelStore()
+  const pixelStore = usePixelGridStore()
   const fileData = ref()
   const load = ref(true)
   const pen = ref(false)

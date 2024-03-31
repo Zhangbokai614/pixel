@@ -13,11 +13,31 @@ const WORKS: AppRouteRecordRaw = {
   },
   children: [
     {
-      path: 'pixel',
-      name: 'pixel',
-      component: () => import('@/views/works/pixel/index.vue'),
+      path: 'pixel-canvas',
+      name: 'pixel-canvas',
+      component: () => import('@/views/works/pixel-canvas/index.vue'),
       meta: {
-        locale: 'menu.works.pixel',
+        locale: 'menu.works.pixel.canvas',
+        requiresAuth: true,
+        roles: ['*'],
+      },
+    },
+    {
+      path: 'pixel-grid',
+      name: 'pixel-grid',
+      component: () => import('@/views/works/pixel-grid/index.vue'),
+      meta: {
+        locale: 'menu.works.pixel.grid',
+        requiresAuth: true,
+        roles: ['*'],
+      },
+    },
+    {
+      path: 'pixel-node',
+      name: 'pixel-node',
+      component: () => import('@/views/works/pixel-node/index.vue'),
+      meta: {
+        locale: 'menu.works.pixel.node',
         requiresAuth: true,
         roles: ['*'],
       },

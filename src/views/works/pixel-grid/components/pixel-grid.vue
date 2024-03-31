@@ -46,7 +46,7 @@
 
 <script lang="ts" setup>
   import { ref, onMounted, computed } from 'vue';
-  import { usePixelStore } from '@/store';
+  import { usePixelGridStore } from '@/store';
  
   const props = defineProps(['canvasWidth', 'canvasHeight', 'spacing', 'currentTools'])
   const { canvasWidth, canvasHeight, spacing } = props
@@ -54,7 +54,7 @@
     return props.currentTools
   })
   
-  const pixelStore = usePixelStore()
+  const pixelStore = usePixelGridStore()
   const gridOffset = pixelStore.getGridOffset
   const { size } = pixelStore.getCellSize
 

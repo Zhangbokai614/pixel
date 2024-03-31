@@ -1,5 +1,8 @@
 export default {
   'menu.works.pixel': '像素',
+  'menu.works.pixel.node': '(v1)像素-node',
+  'menu.works.pixel.grid': '(v2)像素-map-grid',
+  'menu.works.pixel.canvas': '(v3)像素-canvas',
   'workplace.welcome': '欢迎回来！',
   'workplace.balance': '余额（元）',
   'workplace.order.pending': '待支付',

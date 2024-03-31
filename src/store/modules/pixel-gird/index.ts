@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 import { PixelCanvas } from './types';
 
-const usePixelStore = defineStore('pixel', {
+const usePixelGridStore = defineStore('pixel-grid', {
   state: (): PixelCanvas => ({
     canvasWidth: 800,
     canvasHeight: 800,
@@ -131,4 +131,4 @@ const usePixelStore = defineStore('pixel', {
   },
 });
 
-export default usePixelStore;
+export default usePixelGridStore;

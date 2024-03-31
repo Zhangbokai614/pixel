@@ -1,7 +1,7 @@
 import localeMessageBox from '@/components/message-box/locale/zh-CN';
 import localeLogin from '@/views/login/locale/zh-CN';
 
-import localePixel from '@/views/works/pixel/locale/zh-CN';
+import localePixel from '@/views/works/pixel-canvas/locale/zh-CN';
 
 import locale403 from '@/views/exception/403/locale/zh-CN';
 import locale404 from '@/views/exception/404/locale/zh-CN';
