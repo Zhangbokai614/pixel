@@ -53,9 +53,6 @@
   const currentTools = computed(() => {
     return props.currentTools
   })
-  // const  = props['canvas-width']
-  // const  = props['canvas-height']
-  // const  = props['current-tools']
   
   const pixelStore = usePixelStore()
   const gridOffset = pixelStore.getGridOffset

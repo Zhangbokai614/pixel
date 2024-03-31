@@ -16,7 +16,7 @@ const usePixelStore = defineStore('pixel', {
     currentCell: { x: 0, y: 0 },
     hoverCell: { current: { x: 0, y: 0 }, previous: { x: 0, y: 0 } },
     historyColor: [],
-    historyMax: 11,
+    historyMax: 10,
     clearFlag: false,
   }),
 
@@ -122,6 +122,10 @@ const usePixelStore = defineStore('pixel', {
 
     clear() {
       this.initPixels()
+      this.clearFlag = !this.clearFlag
+    },
+
+    reRender() {
       this.clearFlag = !this.clearFlag
     },
   },

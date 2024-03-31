@@ -8,7 +8,7 @@
         :spacing="pixelStore.spacing"
         :currentTools="currentTools"
         :style="{ cursor: currentTools }"
-        @mousemove.stop="mouseHandler"
+        @mousemove="mouseHandler"
         @click="mouseHandler"
         @mousedown.stop="mouseDown"
         @mouseup.stop="mouseUp"
@@ -40,6 +40,7 @@
             </template>
           </a-button>
         </a-space>
+        <input type="file" @change="file" ref="fileData"/>
       </a-space>
       <a-button type="primary" status="danger" @click="pixelStore.clear" class="clear-button">
         <template #icon>
@@ -62,11 +63,11 @@
   ])
 
   const pixelStore = usePixelStore()
+  const fileData = ref()
   const load = ref(true)
   const pen = ref(false)
   const currentTools = ref(toolsMouse.get('pen'))
   const pElem = ref()
-  const from = ref({})
 
   const switchTools = (tools: string) => {
     currentTools.value = toolsMouse.get(tools)
@@ -109,8 +110,9 @@
   }
 
   document.addEventListener('keydown', (e: any) => {
-    e.preventDefault(); 
     if (e.code === 'Space') {
+      e.preventDefault(); 
+
       switchTools('grab')
     }
 
@@ -120,6 +122,66 @@
       }
     })
   })
+
+  const getPixel = (width: number, x: number, y: number, interval: number) => {
+    return (((width * y) +  x) * (interval + 4))
+  }
+
+  const imageDataToPixels = (data: Uint8ClampedArray) => {
+    const { canvasWidth, canvasHeight } = pixelStore
+    const interval = Math.floor(Math.max(canvasWidth, canvasHeight) / pixelStore.gridX)
+
+    for (let i = 0; i < pixelStore.gridY; i += 1) {
+      const row = []
+
+      for (let j = 0; j < pixelStore.gridX; j += 1) {
+        const start = getPixel(canvasWidth, i, j, interval)
+        const r = data[start]
+        const g = data[start + 1]
+        const b = data[start + 2]
+        const a = data[start + 3]
+
+        if (r === g && g === b && b === 255) {
+          console.log(start, data[start])
+        }
+
+        row.push({hover: false, color: `rgba(${r}, ${g}, ${b}, ${a})`})
+      }
+
+      pixelStore.pixels[i] = row
+    }
+
+    pixelStore.reRender()
+  }
+
+  function filetoCanvas(file: File){
+    const reader = new FileReader()
+    reader.onloadend = function(e){
+      const img = new Image()
+      img.onload = function() {
+        const canvas = document.createElement("canvas")
+        // const canvas = pElem.value[0]
+        const ctx = canvas.getContext('2d')
+
+        ctx!.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+        const data = ctx?.getImageData(0, 0, pixelStore.canvasWidth, pixelStore.canvasHeight).data
+        if (data) {
+          imageDataToPixels(data)
+        }
+        
+      };
+
+      img.src = e.target!.result?.toString() || ''
+    };
+
+    reader.readAsDataURL(file)
+  };
+
+  const file = () => {
+    pixelStore.clear()
+    filetoCanvas(fileData.value.files[0])
+  }
 
   onMounted(() => {
     load.value = false
@@ -174,4 +236,3 @@
   }
 
 </style>
-
