@@ -2,15 +2,10 @@
   <div class="pixels">
     <p class="spacing"></p>
     <a-space class="pixel-info" direction="vertical" fill :style="{ zIndex: 1 }">
-      <a-typography-text type="secondary">{{ `(
+      <!-- <a-typography-text type="secondary">{{ `(
         x: ${pixelStore.gridX}, 
         y: ${pixelStore.gridY}, 
-      )`}}</a-typography-text>
-      <a-typography-text type="secondary">{{ `(
-        x: ${hoverCell.current.x}, 
-        y: ${hoverCell.current.y}, 
-        color: ${pixels[hoverCell.current.x][hoverCell.current.y].color}
-      )`}}</a-typography-text>
+      )`}}</a-typography-text> -->
     </a-space>
     <canvas
       ref="canvas"
@@ -18,9 +13,6 @@
       :width="canvasWidth"
       :height="canvasHeight"
       @mousedown="mouseDown"
-      @mousemove="mouseMove"
-      @mouseup="mouseUp"
-      @mouseleave="mouseUp"
     >
     </canvas>
     <a-col class="window-left" >
@@ -48,17 +40,11 @@
   import { ref, onMounted, computed } from 'vue';
   import { usePixelCanvasStore } from '@/store';
  
-  const props = defineProps(['canvasWidth', 'canvasHeight', 'spacing', 'currentTools'])
-  const { canvasWidth, canvasHeight, spacing } = props
-  const currentTools = computed(() => {
-    return props.currentTools
-  })
+  const props = defineProps(['canvasWidth', 'canvasHeight', 'spacing'])
+  const { canvasWidth, canvasHeight } = props
   
   const pixelStore = usePixelCanvasStore()
-  const gridOffset = pixelStore.getGridOffset
-  const { size } = pixelStore.getCellSize
-
-  let { pixels, currentCell, hoverCell, clearFlag, backgroundColor, penColor } = pixelStore
+  const { backgroundColor } = pixelStore
 
   const canvas = ref()
   const canvasCtx = ref()
@@ -67,59 +53,22 @@
   const isCatch = ref(false)
   const catchPoint = ref({ x: 0, y: 0 })
   const translate = ref({ x: 0, y: 0 })
+  const currentTools = ref('pen')
 
-  const fillCell = (ctx: any, x: number, y: number, color: string) => {
-    
-    const cellX = gridOffset.x + x * size
-    const cellY = gridOffset.y + y * size
-    const fillSize = size - spacing
+  const draw = (e: any) => {
+    let x = e.offsetX
+    let y = e.offsetY
 
-    canvasCtx.value.fillStyle = color
-
-    ctx.fillRect(cellX, cellY, fillSize, fillSize);
-  }
-
-  const render = () => {
-    for (let i = 0; i < pixels.length; i += 1) {
-      for (let j = 0; j < pixels[i].length; j += 1) {
-        fillCell(canvasCtx.value, i, j, pixels[i][j].color)
-      }
-    }
-  }
-
-  const borderCell = (ctx: any, x: number, y: number) => {
-    const cellX = gridOffset.x + x * size - (spacing * 0.5)
-    const cellY = gridOffset.y + y * size - (spacing * 0.5)
-    const strokeSize = size
-
-    canvasCtx.value.strokeStyle = penColor
-
-    ctx.strokeRect(cellX, cellY, strokeSize, strokeSize);
-  }
-
-  const clearBorderCell = (ctx: any, x: number, y: number) => {
-    const cellX = gridOffset.x + x * size - (spacing * 0.5)
-    const cellY = gridOffset.y + y * size - (spacing * 0.5)
-    const strokeSize = size
-
-    canvasCtx.value.strokeStyle = backgroundColor
-
-    ctx.strokeRect(cellX, cellY, strokeSize, strokeSize);
-  }
-
-  const hover = () => {
-    clearBorderCell(canvasCtx.value, hoverCell.previous.x, hoverCell.previous.y)
-    borderCell(canvasCtx.value, hoverCell.current.x, hoverCell.current.y)
-  }
-
-  const draw = () => {
-    const { x, y } = currentCell
-
-    fillCell(canvasCtx.value, x, y, pixels[x][y].color)
+    x -= x % 4
+    y -= y % 4
+  
+    canvasCtx.value.fillStyle = '#ff2200'
+    canvasCtx.value.fillRect(x - 2, y - 2, 4, 4)
   }
 
   const initPen = () => {
-    canvasCtx.value.lineWidth = pixelStore.spacing
+    // canvasCtx.value.lineWidth = 4
+    // canvasCtx.value.lineCap = 'square'
   }
 
   const translateCanvas = () => {
@@ -143,57 +92,47 @@
   }
 
   const mouseDown = (e: any) => {
-    if (currentTools.value === 'grab') {
-      catchCanvas(e.clientX, e.clientY)
-      isCatch.value = true
+    canvas.value.onmousemove = (e: any) => {
+      switch(currentTools.value) {
+        case 'grab':
+          catchCanvas(e.clientX, e.clientY)
+
+          translate.value.x += e.clientX - catchPoint.value.x
+          translate.value.y += e.clientY - catchPoint.value.y
+          translateCanvas()
+
+          break
+        case 'pen':
+          draw(e)
+
+          break
+        default:
+      }
     }
-  }
 
-  const mouseMove = (e: any) => {
-    if (isCatch.value) {
-      translate.value.x += e.clientX - catchPoint.value.x
-      translate.value.y += e.clientY - catchPoint.value.y
+    canvas.value.onmouseup = () => {
+      isCatch.value = false
 
-      catchCanvas(e.clientX, e.clientY)
-      translateCanvas()
+      canvas.value.onmousemove = null
+      canvas.value.onmouseup = null
+      canvas.value.onmousleave = null
     }
-  }
 
-  const mouseUp = (e: any) => {
-    isCatch.value = false
+    canvas.value.onmousleave = () => {
+      canvas.value.onmousemove = null
+      canvas.value.onmouseup = null
+      canvas.value.onmousleave = null
+    }
   }
 
   onMounted(() => {  
-    canvasCtx.value = canvas.value.getContext('2d')
+    canvasCtx.value = canvas.value.getContext('2d', {willReadFrequently: true})
     
     initPen()
-    render()
 
     canvas.value.addEventListener('wheel', (e: any) => {
       mouseWheelZoom(e)
     });
-  })
-
-  pixelStore.$subscribe((_, state) => {
-    pixels = state.pixels
-    currentCell = state.currentCell
-
-    hoverCell = state.hoverCell
-    penColor = state.penColor
-    backgroundColor = state.backgroundColor
-    
-    if (hoverCell.current !== hoverCell.previous) {
-      hover()
-    }
-
-    if (clearFlag === state.clearFlag) {
-      draw()
-
-    } else {
-      clearFlag = state.clearFlag
-
-      render()
-    }
   })
 
 </script>
@@ -211,7 +150,7 @@
     align-items: center;
     flex: 1;
     height: 100%;
-    margin-left: auto
+    margin-left: auto;
   }
 
   .spacing {
